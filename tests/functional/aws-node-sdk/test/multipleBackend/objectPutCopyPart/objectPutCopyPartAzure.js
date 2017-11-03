@@ -4,11 +4,10 @@ const { s3middleware } = require('arsenal');
 const azureMpuUtils = s3middleware.azureHelper.mpuUtils;
 
 const { config } = require('../../../../../../lib/Config');
-const authdata = require('../../../../../../conf/authdata.json');
 const withV4 = require('../../support/withV4');
 const BucketUtility = require('../../../lib/utility/bucket-util');
 const { uniqName, getAzureClient, azureLocation, azureLocationMismatch,
-  memLocation, awsLocation, awsS3 } = require('../utils');
+  memLocation, awsLocation, awsS3, getExpectedOwnerInfo } = require('../utils');
 
 const describeSkipIfNotMultiple = config.backends.data !== 'multiple'
     ? describe.skip : describe;
@@ -45,27 +44,9 @@ const keyObjectMemory = 'objectputcopypartMemory';
 const keyObjectAWS = 'objectputcopypartAWS';
 const azureClient = getAzureClient();
 
-const accountName = authdata.accounts[0].name;
-const accountID = authdata.accounts[0].canonicalID;
-
-const result = {
-    Bucket: '',
-    Key: '',
-    UploadId: '',
-    MaxParts: 1000,
-    IsTruncated: false,
-    Parts: [],
-    Initiator:
-     { ID: accountID,
-       DisplayName: accountName },
-    Owner:
-     { DisplayName: accountName,
-       ID: accountID },
-    StorageClass: 'STANDARD',
-};
-
 let s3;
 let bucketUtil;
+let result;
 
 function assertCopyPart(infos, cb) {
     const { azureContainerName, mpuKeyNameAzure, uploadId, md5,
@@ -112,9 +93,30 @@ function assertCopyPart(infos, cb) {
 describeSkipIfNotMultiple('Put Copy Part to AZURE', function describeF() {
     this.timeout(800000);
     withV4(sigCfg => {
-        beforeEach(() => {
+        before(done => {
             bucketUtil = new BucketUtility('default', sigCfg);
             s3 = bucketUtil.s3;
+            const testBucket = `getaclcredentialsbucket-${Date.now()}`;
+            const testKey = `getaclcredentials-${Date.now()}`;
+            getExpectedOwnerInfo(s3, testBucket, testKey, (err, ownerInfo) => {
+                const { ownerID, ownerDisplayName } = ownerInfo;
+                result = {
+                    Bucket: '',
+                    Key: '',
+                    UploadId: '',
+                    MaxParts: 1000,
+                    IsTruncated: false,
+                    Parts: [],
+                    Initiator:
+                     { ID: ownerID,
+                       DisplayName: ownerDisplayName },
+                    Owner:
+                     { DisplayName: ownerDisplayName,
+                       ID: ownerID },
+                    StorageClass: 'STANDARD',
+                };
+                done();
+            });
         });
 
         afterEach(() => {
