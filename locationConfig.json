@@ -1,82 +1,114 @@
 {
-    "us-east-1": {
-        "type": "file",
-        "legacyAwsBehavior": true,
-        "details": {}
-    },
-    "us-east-2": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "us-west-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "us-west-2": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ca-central-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "cn-north-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ap-south-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ap-northeast-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ap-northeast-2": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ap-southeast-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "ap-southeast-2": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "eu-central-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "eu-west-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "eu-west-2": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "EU": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    },
-    "sa-east-1": {
-        "type": "file",
-        "legacyAwsBehavior": false,
-        "details": {}
-    }
+	"aws-test": {
+		"type": "aws_s3",
+		"legacyAwsBehavior": true,
+		"details": {
+			"awsEndpoint": "s3.amazonaws.com",
+			"bucketName": "mybucketzenko",
+			"bucketMatch": true,
+			"credentialsProfile": "zenko"
+		}
+	},
+	"azure-test": {
+		"type": "azure",
+		"legacyAwsBehavior": false,
+		"details": {
+			"azureStorageEndpoint": "https://zenkomeetups2.blob.core.windows.net/",
+			"bucketMatch": true,
+			"azureContainerName": "containerzenko",
+			"azureStorageAccountName": "zenkomeetups2",
+			"azureStorageAccessKey": "XakRSH5tV3S+9bAquKsta0nZkdcskJBzQcPqdvtxVDaxlD6xF+BaWRHSiX1iV1KCqM9gPm4pkKGYRSWDipmCVA=="
+		}
+	},
+	"b2-test": {
+		"type": "b2",
+		"legacyAwsBehavior": false,
+		"details": {
+			"b2StorageEndpoint": "api.backblazeb2.com",
+			"bucketMatch": true,
+			"b2AccountId": "8a8aedc53a53",
+			"b2ApplicationKey": "001c4759599a5c362f030b88187a1e667b57663cad",
+			"b2ContainerName":" bucketb2"
+		}
+	},
+	"us-east-1": {
+		"type": "file",
+		"legacyAwsBehavior": true,
+		"details": {}
+	},
+	"us-east-2": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"us-west-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"us-west-2": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ca-central-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"cn-north-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ap-south-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ap-northeast-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ap-northeast-2": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ap-southeast-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"ap-southeast-2": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"eu-central-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"eu-west-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"eu-west-2": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"EU": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	},
+	"sa-east-1": {
+		"type": "file",
+		"legacyAwsBehavior": false,
+		"details": {}
+	}
 }
