@@ -112,7 +112,8 @@ const constants = {
     // (60,000 milliseconds) since last call
     externalBackendHealthCheckInterval: 60000,
     versioningNotImplBackends: { azure: true },
-    mpuMDStoredExternallyBackend: { aws_s3: true },
+    mpuMDStoredExternallyBackend: { aws_s3: true,
+                                    b2: true},
     /* eslint-enable camelcase */
     mpuMDStoredOnS3Backend: { azure: true },
     azureAccountNameRegex: /^[a-z0-9]{3,24}$/,
