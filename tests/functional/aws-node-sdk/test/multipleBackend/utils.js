@@ -8,16 +8,18 @@ const azure = require('azure-storage');
 
 const { getRealAwsConfig } = require('../support/awsConfig');
 const { config } = require('../../../../../lib/Config');
+const authdata = require('../../../../../conf/authdata.json');
 
-const memLocation = 'mem-test';
-const fileLocation = 'file-test';
-const awsLocation = 'aws-test';
-const awsLocation2 = 'aws-test-2';
-const awsLocationMismatch = 'aws-test-mismatch';
-const awsLocationEncryption = 'aws-test-encryption';
-const azureLocation = 'azuretest';
-const azureLocation2 = 'azuretest2';
-const azureLocationMismatch = 'azuretestmismatch';
+const memLocation = 'scality-internal-mem';
+const fileLocation = 'scality-internal-file';
+const awsLocation = 'awsbackend';
+const awsLocation2 = 'awsbackend2';
+const awsLocationMismatch = 'awsbackendmismatch';
+const awsLocationEncryption = 'awsbackendencryption';
+const azureLocation = 'azurebackend';
+const azureLocation2 = 'azurebackend2';
+const azureLocationMismatch = 'azurebackendmismatch';
+const azureLocationNonExistContainer = 'azurenonexistcontainer';
 const versioningEnabled = { Status: 'Enabled' };
 const versioningSuspended = { Status: 'Suspended' };
 const awsFirstTimeout = 10000;
@@ -26,9 +28,8 @@ let describeSkipIfNotMultiple = describe.skip;
 let awsS3;
 let awsBucket;
 
-if (config.backends.data === 'multiple' && !process.env.S3_END_TO_END) {
+if (config.backends.data === 'multiple') {
     describeSkipIfNotMultiple = describe;
-    // can only get real aws config if not running end-to-end
     const awsConfig = getRealAwsConfig(awsLocation);
     awsS3 = new AWS.S3(awsConfig);
     awsBucket = config.locationConstraints[awsLocation].details.bucketName;
@@ -57,6 +58,30 @@ const utils = {
     azureLocation,
     azureLocation2,
     azureLocationMismatch,
+    azureLocationNonExistContainer,
+};
+
+utils.getOwnerInfo = account => {
+    let ownerID;
+    let ownerDisplayName;
+    if (process.env.S3_END_TO_END) {
+        if (account === 'account1') {
+            ownerID = process.env.CANONICAL_ID;
+            ownerDisplayName = process.env.ACCOUNT_NAME;
+        } else {
+            ownerID = process.env.ACCOUNT2_CANONICAL_ID;
+            ownerDisplayName = process.env.ACCOUNT2_NAME;
+        }
+    } else {
+        if (account === 'account1') {
+            ownerID = authdata.accounts[0].canonicalID;
+            ownerDisplayName = authdata.accounts[0].name;
+        } else {
+            ownerID = authdata.accounts[1].canonicalID;
+            ownerDisplayName = authdata.accounts[1].name;
+        }
+    }
+    return { ownerID, ownerDisplayName };
 };
 
 utils.uniqName = name => `${name}${new Date().getTime()}`;
@@ -93,7 +118,7 @@ utils.getAzureClient = () => {
         params.azureStorageAccessKey, params.azureStorageEndpoint);
 };
 
-utils.getAzureContainerName = () => {
+utils.getAzureContainerName = azureLocation => {
     let azureContainerName;
     if (config.locationConstraints[azureLocation] &&
     config.locationConstraints[azureLocation].details &&
@@ -218,28 +243,42 @@ utils.getAndAssertResult = (s3, params, cb) => {
         });
 };
 
-utils.awsGetLatestVerId = (key, body, cb, isRetry) => {
+utils.getAwsRetry = (params, retryNumber, assertCb) => {
+    const { key, versionId } = params;
+    const retryTimeout = {
+        0: 0,
+        1: awsFirstTimeout,
+        2: awsSecondTimeout,
+    };
+    const maxRetries = 2;
     const getObject = awsS3.getObject.bind(awsS3);
-    const timeout = isRetry ? awsSecondTimeout : awsFirstTimeout;
-    return setTimeout(getObject, timeout, { Bucket: awsBucket, Key: key },
-        (err, result) => {
-            if (err && !isRetry) {
-                // retry operation with longer timeout
-                return utils.awsGetLatestVerId(key, body, cb, true);
+    const timeout = retryTimeout[retryNumber];
+    return setTimeout(getObject, timeout, { Bucket: awsBucket, Key: key,
+        VersionId: versionId },
+        (err, res) => {
+            try {
+                // note: this will only catch exceptions thrown before an
+                // asynchronous call
+                return assertCb(err, res);
+            } catch (e) {
+                if (retryNumber !== maxRetries) {
+                    return utils.getAwsRetry(params, retryNumber + 1,
+                        assertCb);
+                }
+                throw e;
             }
-            assert.strictEqual(err, null, 'Expected success ' +
-                `getting object from AWS, got error ${err}`);
-            const resultMD5 = utils.expectedETag(result.Body, false);
-            const expectedMD5 = utils.expectedETag(body, false);
-            if (resultMD5 !== expectedMD5 && !isRetry) {
-                // retry operation with longer timeout
-                return utils.awsGetLatestVerId(key, body, cb, true);
-            }
-            assert.strictEqual(resultMD5, expectedMD5,
-                'expected different body');
-            return cb(null, result.VersionId);
         });
 };
+
+utils.awsGetLatestVerId = (key, body, cb) =>
+    utils.getAwsRetry({ key }, 0, (err, result) => {
+        assert.strictEqual(err, null, 'Expected success ' +
+            `getting object from AWS, got error ${err}`);
+        const resultMD5 = utils.expectedETag(result.Body, false);
+        const expectedMD5 = utils.expectedETag(body, false);
+        assert.strictEqual(resultMD5, expectedMD5, 'expected different body');
+        return cb(null, result.VersionId);
+    });
 
 utils.tagging = {};
 

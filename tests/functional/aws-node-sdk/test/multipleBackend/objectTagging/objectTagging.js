@@ -2,12 +2,12 @@ const assert = require('assert');
 const async = require('async');
 const withV4 = require('../../support/withV4');
 const BucketUtility = require('../../../lib/utility/bucket-util');
-const { describeSkipIfNotMultiple, awsS3, awsBucket, getAzureClient,
-    getAzureContainerName, convertMD5, memLocation, fileLocation, awsLocation,
-    azureLocation } = require('../utils');
+const { describeSkipIfNotMultiple, awsS3, awsBucket, getAwsRetry,
+    getAzureClient, getAzureContainerName, convertMD5, memLocation,
+    fileLocation, awsLocation, azureLocation } = require('../utils');
 
 const azureClient = getAzureClient();
-const azureContainerName = getAzureContainerName();
+const azureContainerName = getAzureContainerName(azureLocation);
 const bucket = 'testmultbackendtagging';
 const body = Buffer.from('I am a body', 'utf8');
 const correctMD5 = 'be747eb4b75517bf6b3cf7c5fbb62f3a';
@@ -54,8 +54,7 @@ function getAndAssertObjectTags(tagParams, callback) {
 
 function awsGet(key, tagCheck, isEmpty, isMpu, callback) {
     process.stdout.write('Getting object from AWS\n');
-    awsS3.getObject({ Bucket: awsBucket, Key: key },
-    (err, res) => {
+    getAwsRetry({ key }, 0, (err, res) => {
         assert.equal(err, null);
         if (isEmpty) {
             assert.strictEqual(res.ETag, `"${emptyMD5}"`);
@@ -116,11 +115,9 @@ function getObject(key, backend, tagCheck, isEmpty, isMpu, callback) {
             return cb();
         });
     }
-    if (backend === 'aws-test') {
-        setTimeout(() => {
-            get(() => awsGet(key, tagCheck, isEmpty, isMpu, callback));
-        }, cloudTimeout);
-    } else if (backend === 'azuretest') {
+    if (backend === 'awsbackend') {
+        get(() => awsGet(key, tagCheck, isEmpty, isMpu, callback));
+    } else if (backend === 'azurebackend') {
         setTimeout(() => {
             get(() => azureGet(key, tagCheck, isEmpty, callback));
         }, cloudTimeout);
@@ -192,7 +189,7 @@ function testSuite() {
 
         describe('putObject with tags and putObjectTagging', () => {
             testBackends.forEach(backend => {
-                const itSkipIfAzure = backend === 'azuretest' ? it.skip : it;
+                const itSkipIfAzure = backend === 'azurebackend' ? it.skip : it;
                 it(`should put an object with tags to ${backend} backend`,
                 done => {
                     const key = `somekey-${Date.now()}`;
