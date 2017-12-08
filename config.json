@@ -63,5 +63,9 @@
     "recordLog": {
         "enabled": false,
         "recordLogName": "s3-recordlog"
+    },
+    "localCache": {
+    "host": "127.0.0.1",
+    "port": 6379
     }
 }
