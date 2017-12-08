@@ -47,14 +47,6 @@ function testSuite() {
 		keys.forEach(key => {
 		    describe(`${key.describe} size`, () => {
 				const testKey = `${key.name}-${Date.now()}`;
-
-                it('should return code 404 when testing GET on non existing file', done => {
-					s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
-						assert.notEqual(err, null, 'Expected error but got success, this file seems to exist already, please run test again');
-						assert.equal(err.statusCode, 404, `Expected error 404 but got error ${err.statusCode}`);
-						done();
-					});
-				});
 				it('should return no error when testing PUT with valid params', done => {
                     s3.putObject({
                         Bucket: b2Location,
@@ -73,8 +65,20 @@ function testSuite() {
 						done();
 					});
 				});
-				it('should return code 400 when testing PUT with fake location', done => {
-					let tmpLoc = 'PleaseDontCreateALocationWithThisNameOrThisTestWillFail-' + Date.now()
+				it('should return code 400 when testing PUT with no location', done => {
+					let tmpLoc = null;
+                    s3.putObject({
+                        Bucket: tmpLoc,
+                        Key: testKey,
+                        Body: key.body,
+                        Metadata: { 'scal-location-constraint': tmpLoc }
+                    }, (err, res) => {
+						assert.notEqual(err, null, 'Expected error but got success, PUT with empty location should always throw, please run test again');
+						done();
+                    });
+                });
+				it('should return code 400 when testing PUT with non existing location', done => {
+					let tmpLoc = 'PleaseDontCreateALocationWithThisNameOrThisTestWillFail-' + Date.now();
                     s3.putObject({
                         Bucket: tmpLoc,
                         Key: testKey,
@@ -84,6 +88,43 @@ function testSuite() {
 						assert.notEqual(err, null, 'Expected error but got success, this location seems to exist already, please run test again');
 						assert.equal(err.statusCode, 400, `Expected error 400 but got error ${err.statusCode}`);
 						done();
+                    });
+                });
+				it('should return diff MD5 (if non empty size), when testing GET after PUT a corrupted empty body', done => {
+					let tmpBody = null
+                    s3.putObject({
+                        Bucket: b2Location,
+                        Key: testKey,
+                        Body: tmpBody,
+                        Metadata: { 'scal-location-constraint': b2Location }
+                    }, (err, res) => {
+						assert.equal(err, null, `Expected success but got error ${err}`);
+						s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
+							assert.equal(err, null, `Expected success but got error ${err}`);
+							if (key.describe == 'empty') {
+								assert.equal(res.ETag, `"${key.MD5}"`, `Expected identicals MD5 but got : ${res.ETag} , expected : ${key.MD5}`);
+							}
+							else {
+								assert.notEqual(res.ETag, `"${key.MD5}"`, `Expected different MD5 but got identicals: ${res.ETag}`);
+							}
+							done();
+						});
+                    });
+                });
+                it('should return diff MD5 when testing GET after PUT corrupted body', done => {
+					let tmpBody = 'PleaseDontCreateABodyWithThisContentOrThisTestWillFail-' + Date.now();
+                    s3.putObject({
+                        Bucket: b2Location,
+                        Key: testKey,
+                        Body: tmpBody,
+                        Metadata: { 'scal-location-constraint': b2Location }
+                    }, (err, res) => {
+						assert.equal(err, null, `Expected success but got error ${err}`);
+						s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
+							assert.equal(err, null, `Expected success but got error ${err}`);
+							assert.notEqual(res.ETag, `"${key.MD5}"`, `Expected different MD5 but got identicals: ${res.ETag}`);
+							done();
+						});
                     });
                 });
 			})
