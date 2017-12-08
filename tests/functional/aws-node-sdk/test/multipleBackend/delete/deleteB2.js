@@ -59,30 +59,48 @@ function testSuite() {
 		                }, done);
 		            }, b2Timeout);
 		        });
-				it('should return no error && same MD5 when testing GET with existing file', done => {
-					s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
-						assert.equal(err, null, `Expected success but got error ${err}`);
-						assert.strictEqual(res.ETag, `"${key.MD5}"`, `Expected identical MD5 : got ${res.ETag} , expected: ${key.MD5}`);
-						done();
-					});
-				});
-				it('should return no error when testing DELETE with existing file', done => {
+				it('should return no error when testing DELETE with existing key', done => {
 					s3.deleteObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
 						assert.equal(err, null, `Expected success but got error ${err}`);
 						done();
 					});
 				});
-				it('should return code 404 when testing GET with non existing file', done => {
+				it('should return code 404 when testing GET with deleted key', done => {
 					s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
 						assert.notEqual(err, null, 'Expected error but got success');
 						assert.equal(err.statusCode, 404, `Expected error 404 but got error ${err.statusCode}`);
 						done();
 					});
 				});
-				it('should return code 404 when testing DELETE with non existing file', done => {
-					s3.getObject({ Bucket: b2Location, Key: testKey }, (err, res) => {
+				it('should return MissingRequiredParameter when testing DELETE with no key', done => {
+					let tmpKey = null;
+					s3.deleteObject({ Bucket: b2Location, Key: tmpKey }, (err, res) => {
+						assert.notEqual(err, null, 'Expected error but got success');
+						assert.equal(err, 'MissingRequiredParameter: Missing required key \'Key\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
+						done();
+					});
+				});
+				it('should return code 404 when testing DELETE with non existing key', done => {
+					let tmpKey = 'PleaseDontCreateAFileWithThisNameOrThisTestWillFail-' + Date.now();
+					s3.getObject({ Bucket: b2Location, Key: tmpKey }, (err, res) => {
 						assert.notEqual(err, null, 'Expected error but got success');
 						assert.equal(err.statusCode, 404, `Expected error 404 but got error ${err.statusCode}`);
+						done();
+					});
+				});
+				it('should return MissingRequiredParameter when testing DELETE with no location', done => {
+					let tmpLoc = null;
+					s3.deleteObject({ Bucket: tmpLoc, Key: testKey }, (err, res) => {
+						assert.notEqual(err, null, 'Expected error but got success');
+						assert.equal(err, 'MissingRequiredParameter: Missing required key \'Bucket\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
+						done();
+					});
+				});
+				it('should return InvalidBucketName when testing DELETE with non existing location', done => {
+					let tmpLoc = 'PleaseDontCreateALocationWithThisNameOrThisTestWillFail-' + Date.now();
+					s3.deleteObject({ Bucket: tmpLoc, Key: testKey }, (err, res) => {
+						assert.notEqual(err, null, 'Expected error but got success');
+						assert.equal(err, 'InvalidBucketName: The specified bucket is not valid.', `Expected error 404 but got error ${err.statusCode}`);
 						done();
 					});
 				});
