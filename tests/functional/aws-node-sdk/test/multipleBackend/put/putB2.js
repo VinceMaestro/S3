@@ -13,7 +13,7 @@ const keys = getB2Keys();
 
 const b2Timeout = 10000;
 
-describeSkipIfNotMultiple('Multiple backend PUT object from B2',
+describeSkipIfNotMultiple('Multiple backend PUT object to B2',
 function testSuite() {
 	this.timeout(30000);
 	withV4(sigCfg => {
@@ -65,7 +65,20 @@ function testSuite() {
 						done();
 					});
 				});
-				it('should return code 400 when testing PUT with no location', done => {
+				it('should return MissingRequiredParameter when testing PUT with no key', done => {
+					let tmpKey = null;
+                    s3.putObject({
+                        Bucket: b2Location,
+                        Key: tmpKey,
+                        Body: key.body,
+                        Metadata: { 'scal-location-constraint': b2Location }
+                    }, (err, res) => {
+						assert.notEqual(err, null, 'Expected error but got success, PUT with no key should always throw, please run test again');
+                        assert.equal(err, 'MissingRequiredParameter: Missing required key \'Key\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
+						done();
+                    });
+                });
+				it('should return MissingRequiredParameter when testing PUT with no location', done => {
 					let tmpLoc = null;
                     s3.putObject({
                         Bucket: tmpLoc,
@@ -74,6 +87,7 @@ function testSuite() {
                         Metadata: { 'scal-location-constraint': tmpLoc }
                     }, (err, res) => {
 						assert.notEqual(err, null, 'Expected error but got success, PUT with empty location should always throw, please run test again');
+                        assert.equal(err, 'MissingRequiredParameter: Missing required key \'Bucket\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
 						done();
                     });
                 });
