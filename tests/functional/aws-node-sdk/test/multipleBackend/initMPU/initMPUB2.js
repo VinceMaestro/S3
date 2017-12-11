@@ -13,7 +13,7 @@ const keyName = `somekeyInitMPU-${Date.now()}`;
 
 const b2Timeout = 10000;
 
-describeSkipIfNotMultiple('Multiple backend PUT object from B2',
+describeSkipIfNotMultiple('Multiple backend INITMPU object to B2',
 function testSuite() {
 	this.timeout(30000);
 	withV4(sigCfg => {
@@ -69,7 +69,7 @@ function testSuite() {
 				})
 			})
 
-			it('should return no error when testing listMPU with valid params', done => {
+            it('should return no error when testing listMPU with valid params', done => {
 				s3.listMultipartUploads({ Bucket: b2Location }, (err, res) => {
 					assert.equal(err, null, `Expected success but got error ${err}`);
 					assert.strictEqual(res.NextKeyMarker, keyName);
@@ -79,7 +79,19 @@ function testSuite() {
 					done();
 				})
 			})
-
+			it('should return MissingRequiredParameter when testing initMPU with no key', done => {
+				let tmpKey = null;
+				const params = {
+                    Bucket: b2Location,
+                    Key: tmpKey,
+                    Metadata: { 'scal-location-constraint': b2Location },
+                };
+				s3.createMultipartUpload(params, (err, res) => {
+					assert.notEqual(err, null, 'Expected error but got success, INIT.MPU with no key should always throw, please run test again');
+					assert.equal(err, 'MissingRequiredParameter: Missing required key \'Key\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
+					done();
+				})
+			})
 			it('should return MissingRequiredParameter when testing initMPU with no location', done => {
 				let tmpLoc = null;
 				const params = {
@@ -88,12 +100,11 @@ function testSuite() {
                     Metadata: { 'scal-location-constraint': tmpLoc },
                 };
 				s3.createMultipartUpload(params, (err, res) => {
-					assert.notEqual(err, null, 'Expected error but got success, this location : ' + `${tmpLoc}` + ' seems to exist already, please run test again');
+					assert.notEqual(err, null, 'Expected error but got success, INIT.MPU with no location should always throw, please run test again');
 					assert.equal(err, 'MissingRequiredParameter: Missing required key \'Bucket\' in params', `Expected error MissingRequiredParameter but got error ${err}`);
 					done();
 				})
 			})
-
 			it('should return code 400 when testing initMPU with non valid location', done => {
 				let tmpLoc = 'PleaseDontCreateALocationWithThisNameOrThisTestWillFail-' + Date.now();
 				const params = {
