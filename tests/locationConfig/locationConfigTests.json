@@ -25,89 +25,57 @@
         "legacyAwsBehavior": false,
         "details": {}
     },
+    "awsbackend": {
+		"type": "aws_s3",
+		"legacyAwsBehavior": true,
+		"details": {
+			"awsEndpoint": "s3.amazonaws.com",
+			"bucketName": "awssmartdatabucket",
+			"bucketMatch": true,
+			"credentialsProfile": "zenko"
+		}
+	},
+	"awsbackendmismatch": {
+        "type": "aws_s3",
+        "legacyAwsBehavior": true,
+        "details": {
+            "awsEndpoint": "s3.amazonaws.com",
+            "bucketName": "awssmartdatabucket",
+            "bucketMatch": true,
+            "credentialsProfile": "zenko"
+        }
+    },
     "awsbackendencryption": {
         "type": "aws_s3",
         "legacyAwsBehavior": true,
         "details": {
             "awsEndpoint": "s3.amazonaws.com",
-            "bucketName": "multitester555",
+            "bucketName": "awssmartdatabucket",
             "bucketMatch": true,
-            "credentialsProfile": "default",
+            "credentialsProfile": "zenko",
             "serverSideEncryption": true
         }
     },
-    "awsbackend": {
-        "type": "aws_s3",
-        "legacyAwsBehavior": true,
-        "details": {
-            "awsEndpoint": "s3.amazonaws.com",
-            "bucketName": "multitester555",
-            "bucketMatch": true,
-            "credentialsProfile": "default"
-        }
-    },
-    "awsbackendmismatch": {
-        "type": "aws_s3",
-        "legacyAwsBehavior": true,
-        "details": {
-            "awsEndpoint": "s3.amazonaws.com",
-            "bucketName": "multitester555",
-            "bucketMatch": false,
-            "credentialsProfile": "default"
-        }
-    },
-    "awsbackend2": {
-        "type": "aws_s3",
-        "legacyAwsBehavior": true,
-        "details": {
-            "awsEndpoint": "s3.amazonaws.com",
-            "bucketName": "multitester222",
-            "bucketMatch": true,
-            "credentialsProfile": "default_2"
-        }
-    },
-    "azurebackend": {
-        "type": "azure",
-        "legacyAwsBehavior": true,
-        "details": {
-            "azureStorageEndpoint": "https://fakeaccountname.blob.core.fake.net/",
-            "azureStorageAccountName": "fakeaccountname",
-            "azureStorageAccessKey": "Fake00Key001",
-            "bucketMatch": true,
-            "azureContainerName": "s3test"
-        }
-    },
-    "azurebackend2": {
-        "type": "azure",
-        "legacyAwsBehavior": true,
-        "details": {
-            "azureStorageEndpoint": "https://fakeaccountname2.blob.core.fake.net/",
-            "azureStorageAccountName": "fakeaccountname2",
-            "azureStorageAccessKey": "Fake00Key002",
-            "bucketMatch": true,
-            "azureContainerName": "s3test2"
-        }
-    },
-    "azurebackendmismatch": {
-        "type": "azure",
-        "legacyAwsBehavior": true,
-        "details": {
-            "azureStorageEndpoint": "https://fakeaccountname.blob.core.fake.net/",
-            "azureStorageAccountName": "fakeaccountname",
-            "azureStorageAccessKey": "Fake00Key001",
-            "bucketMatch": false,
-            "azureContainerName": "s3test"
-        }
-    },
-    "azurenonexistcontainer": {
-        "type": "azure",
-        "legacyAwsBehavior": true,
-        "details": {
-            "azureStorageEndpoint": "https://fakeaccountname.blob.core.fake.net/",
-            "azureStorageAccountName": "fakeaccountname",
-            "azureStorageAccessKey": "Fake00Key123",
-            "bucketMatch": true,
-            "azureContainerName": "s3createbucketonfly"
-        }
-    }
+	"b2backend": {
+		"type": "b2",
+		"legacyAwsBehavior": false,
+		"details": {
+			"b2StorageEndpoint": "api.backblazeb2.com",
+			"bucketMatch": true,
+			"b2AccountId": "838408388019",
+			"b2ApplicationKey": "0019b956a70e062f6659918ae806ec2a22ff7b2dc0",
+			"b2ContainerName":"Bucket-Unique-Name"
+		}
+	},
+	"azure-test": {
+		"type": "azure",
+		"legacyAwsBehavior": false,
+		"details": {
+			"azureStorageEndpoint": "https://bucketazure.blob.core.windows.net/",
+			"bucketMatch": true,
+			"azureContainerName": "bucketazure",
+			"azureStorageAccountName": "bucketazure",
+			"azureStorageAccessKey": "gQtH6jGut95w+tMHqSiJyEV9TtVuAELdttUlXrpvzvew0VsU4Pe9ZCNxl/0ZALq90Ugn3n3FfrWylH5Zio3BKg=="
+		}
+	}
 }
