@@ -135,7 +135,7 @@ utils.getAzureKeys = () => {
     const keys = [
         {
             describe: 'empty',
-            name: `emptykey-${Date.now()}`,
+            name: `somekey-${Date.now()}`,
             body: '',
             MD5: 'd41d8cd98f00b204e9800998ecf8427e',
         },
@@ -178,7 +178,6 @@ utils.getB2Keys = () => {
     ];
     return keys;
 };
-
 
 // For contentMD5, Azure requires base64 but AWS requires hex, so convert
 // from base64 to hex
